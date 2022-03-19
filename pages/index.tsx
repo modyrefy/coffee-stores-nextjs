@@ -4,25 +4,32 @@ import Image from "next/image";
 import styles from '../styles/Home.module.css'
 import {Banner} from "../components/banner";
 import {Card} from "../components/card";
+import {Console} from "inspector";
 import coffeeStores from "../data/coffee-stores.json";
+import {stringify} from "querystring";
+import {CoffeeStoreDashboard} from "../models/coffee_store_dashboard";
+import {fecthCoffeeStores} from "../lib";
 
 //https://nextjs.org/docs/basic-features/typescript
 
 export  const getStaticProps:GetStaticProps  = async(context)=> {
+const data:CoffeeStoreDashboard=await fecthCoffeeStores();
     return {
         props: {
-            CoffeeStoresObj:coffeeStores,
-            message: `Next.js is awesome`
-        }, // will be passed to the page component as props
+            coffeeStoresObj: data,
+        },
     }
 }
 const Home: NextPage = (props   ) => {
 //const Home: NextPage<{CoffeeStoresObj:any,message:string}> = ({CoffeeStoresObj,message}   ) => {
- // console.log('props',props);
+  //console.log('props',props);
     const handleOnBannerBtnClick=()=> {
         console.log('hi banner button')
     }
-  return (
+    // @ts-ignore
+    const {coffeeStoresObj}=props;
+  // console.log('CoffeeStoresObj+++',coffeeStoresObj);
+    return (
     <div className={styles.container}>
       <Head>
         <title> Coffee Connoisseur</title>
@@ -41,20 +48,30 @@ const Home: NextPage = (props   ) => {
                   height={400}
                   alt="hero image"/>
           </div>
-          {props.CoffeeStoresObj.length &&(
+          {coffeeStoresObj.message!=null &&(
+             <>
+              <p>an error occurred</p>
+                 <p>{coffeeStoresObj.message}</p>
+              </>
+          )}
+
+          {coffeeStoresObj.results!=null && coffeeStoresObj.results.length &&(
+              <>
+              <h2 className={styles.heading2}>Toronto Stores</h2>
               <div className={styles.cardLayout}>
-                  {props.CoffeeStoresObj.map((coffeeStore:any)=>{
+                  {coffeeStoresObj.results.map((coffeeStore:any)=>{
                       return(
                           <Card
-                              key={coffeeStore.id}
+                              key={coffeeStore.fsq_id}
                               name={coffeeStore.name}
-                                hrefUrl={`/coffeestore/${coffeeStore.id}`}
-                                imageUrl={ coffeeStore.imgUrl ||
+                                hrefUrl={`/coffeestore/${coffeeStore.fsq_id}`}
+                                imageUrl={ coffeeStore.imageUrl ||
                                 "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"}
                           />
                       )
                   })}
               </div>
+              </>
           )}
       </main>
     </div>
