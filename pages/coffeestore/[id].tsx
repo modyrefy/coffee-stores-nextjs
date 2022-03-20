@@ -1,4 +1,4 @@
-import {GetStaticPaths, GetStaticProps, NextPage} from "next";
+import {GetStaticPaths, GetStaticProps,GetServerSideProps , NextPage} from "next";
 import {useRouter} from "next/router";
 import Link from "next/link";
 import Head from "next/head";
@@ -9,15 +9,20 @@ import styles from '../../styles/coffeestore.module.css'
 import {CoffeeStoreDashboard, CoffeeStoreInformation} from "../../models/coffee_store_dashboard";
 import {fecthCoffeeStores} from "../../lib";
 export  const getStaticProps:GetStaticProps  = async(context)=> {
+//export  const getServerSideProps:GetServerSideProps   = async(context)=> {
     const data:CoffeeStoreDashboard=await fecthCoffeeStores();
     let coffeeStoreDetail :CoffeeStoreInformation|null=null;
     try {
          coffeeStoreDetail = data.results.find((obj) => {
             return obj.fsq_id.toString() === context.params.id
         });
-    } catch (e) {
-        console.log('eeeeeeeeeeeee')
+    } catch (error:any) {
+        coffeeStoreDetail=null;
+        alert(error.message)
+        console.log(error.message)
     }
+    coffeeStoreDetail=coffeeStoreDetail===undefined?null:coffeeStoreDetail;
+    console.log('coffeeStoreDetail',coffeeStoreDetail);
     return {
         props: {
             coffeeStoresObj: coffeeStoreDetail,
@@ -51,10 +56,11 @@ const CoffeeStore: NextPage = (props) => {
         console.log('vote')
     }
     // @ts-ignore
-    const coffeeStoresObj:CoffeeStoreInformation=props.coffeeStoresObj;
-    console.log('coffeeStoresObj',coffeeStoresObj )
+   const coffeeStoresObj:CoffeeStoreInformation|null=props.coffeeStoresObj;
+    //console.log('coffeeStoresObj',props.coffeeStoresObj )
     return (
         <>
+            {coffeeStoresObj==null &&(<>No data to display please try again later</>)}
             {coffeeStoresObj && (
                 <div className={styles.layout}>
                     <Head>

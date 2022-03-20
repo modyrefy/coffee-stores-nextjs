@@ -18,8 +18,8 @@ const getListOfCoffeeStorePhotos = async () => {
     return unsplashResults.map((result) => result.urls["small"]);
 };
 
-export  const fecthCoffeeStores=async ():Promise<CoffeeStoreDashboard>=> {
-    const latLong: string = "43.65267326999575,-79.39545615725015";
+export  const fecthCoffeeStores=async (latLong:string="43.65267326999575,-79.39545615725015"):Promise<CoffeeStoreDashboard>=> {
+    //const latLong: string = ;
     const limit: number = 10;
     const query: string = "coffee stores";
     // @ts-ignore

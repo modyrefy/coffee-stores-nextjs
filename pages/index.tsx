@@ -4,11 +4,11 @@ import Image from "next/image";
 import styles from '../styles/Home.module.css'
 import {Banner} from "../components/banner";
 import {Card} from "../components/card";
-import {Console} from "inspector";
-import coffeeStores from "../data/coffee-stores.json";
-import {stringify} from "querystring";
 import {CoffeeStoreDashboard} from "../models/coffee_store_dashboard";
 import {fecthCoffeeStores} from "../lib";
+import {TrackLocationModel} from "../models/track-location";
+import {useTrackLocation} from "../hooks";
+import {useEffect, useState} from "react";
 
 //https://nextjs.org/docs/basic-features/typescript
 
@@ -23,9 +23,42 @@ const data:CoffeeStoreDashboard=await fecthCoffeeStores();
 const Home: NextPage = (props   ) => {
 //const Home: NextPage<{CoffeeStoresObj:any,message:string}> = ({CoffeeStoresObj,message}   ) => {
   //console.log('props',props);
+    //let locationModel:TrackLocationModel={latitude: 0, longitude: 0 ,errorMessage:null};
+    const { handleTrackLocation,latLong, locationErrorMsg, isFindingLocation } =useTrackLocation();
+    const [coffeeStores,setCoffeeStore]=useState<CoffeeStoreDashboard|null>(null);
+    const [coffeeStoresError, setCoffeeStoresError] = useState<string>("");
+
+    useEffect(()=>{
+        async function setCoffeeStoresByLocationAsync(){
+            if(latLong) {
+                try {
+                    const fetchedCoffeeStores = await fecthCoffeeStores(latLong);
+                    setCoffeeStore(fetchedCoffeeStores);
+                    setCoffeeStoresError("");
+                   // console.log('fetchedCoffeeStores',fetchedCoffeeStores);
+                }
+                catch (error:any)
+                {
+                    setCoffeeStoresError(error.message);
+                   // console.log(err);
+                }
+            }
+        }
+        setCoffeeStoresByLocationAsync()
+    },[latLong])
+    console.log('latLong ',latLong);
+    console.log('locationErrorMsg ',locationErrorMsg);
     const handleOnBannerBtnClick=()=> {
-        console.log('hi banner button')
+        console.log('hi banner button');
+        handleTrackLocation();
+        //  locationModel=useTrackLocation();
+        // console.log('locationModel',locationModel);
+        // console.log('latitude',locationModel.latitude);
     }
+    // const handleOnBannerBtnClick1=()=> {
+    //     console.log('locationModel',locationModel);
+    //     console.log('latitude',locationModel.latitude);
+    // }
     // @ts-ignore
     const {coffeeStoresObj}=props;
   // console.log('CoffeeStoresObj+++',coffeeStoresObj);
@@ -41,13 +74,19 @@ const Home: NextPage = (props   ) => {
         <h1 className={styles.title}>
             Coffee Connoisseur
         </h1>
-          <Banner buttonText="View stores nearby!" handleOnClick={handleOnBannerBtnClick}/>
+          <Banner buttonText={isFindingLocation?"....Loading":"View stores nearby!"} handleOnClick={handleOnBannerBtnClick}/>
+          {locationErrorMsg && <p>Something went wrong: {locationErrorMsg}</p>}
+          {coffeeStoresError && <p>Something went wrong: {coffeeStoresError}</p>}
+          {/*<Banner buttonText="get Location!" handleOnClick={handleOnBannerBtnClick1}/>*/}
           <div className={styles.heroImage}>
           <Image  src="/static/hero-image.png"
                   width={700}
                   height={400}
                   alt="hero image"/>
           </div>
+
+
+
           {coffeeStoresObj.message!=null &&(
              <>
               <p>an error occurred</p>
@@ -55,8 +94,30 @@ const Home: NextPage = (props   ) => {
               </>
           )}
 
+          {coffeeStores!=null &&coffeeStores.results!=null && coffeeStores.results.length &&(
+              <>
+                  <div className={styles.sectionWrapper}>
+                      <h2 className={styles.heading2}>Stores Near Me</h2>
+                      <div className={styles.cardLayout}>
+                          {coffeeStores.results.map((coffeeStore:any)=>{
+                              return(
+                                  <Card
+                                      key={coffeeStore.fsq_id}
+                                      name={coffeeStore.name}
+                                      hrefUrl={`/coffeestore/${coffeeStore.fsq_id}`}
+                                      imageUrl={ coffeeStore.imageUrl ||
+                                      "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"}
+                                  />
+                              )
+                          })}
+                      </div>
+                  </div>
+              </>
+          )}
+
           {coffeeStoresObj.results!=null && coffeeStoresObj.results.length &&(
               <>
+              <div className={styles.sectionWrapper}>
               <h2 className={styles.heading2}>Toronto Stores</h2>
               <div className={styles.cardLayout}>
                   {coffeeStoresObj.results.map((coffeeStore:any)=>{
@@ -70,6 +131,7 @@ const Home: NextPage = (props   ) => {
                           />
                       )
                   })}
+              </div>
               </div>
               </>
           )}
