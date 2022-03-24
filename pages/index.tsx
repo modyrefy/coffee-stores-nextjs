@@ -8,7 +8,9 @@ import {CoffeeStoreDashboard} from "../models/coffee_store_dashboard";
 import {fecthCoffeeStores} from "../lib";
 import {TrackLocationModel} from "../models/track-location";
 import {useTrackLocation} from "../hooks";
-import {useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
+import {StoreContext} from "../store";
+import {ACTION_TYPES} from "../store/store-context";
 
 //https://nextjs.org/docs/basic-features/typescript
 
@@ -24,16 +26,24 @@ const Home: NextPage = (props   ) => {
 //const Home: NextPage<{CoffeeStoresObj:any,message:string}> = ({CoffeeStoresObj,message}   ) => {
   //console.log('props',props);
     //let locationModel:TrackLocationModel={latitude: 0, longitude: 0 ,errorMessage:null};
-    const { handleTrackLocation,latLong, locationErrorMsg, isFindingLocation } =useTrackLocation();
-    const [coffeeStores,setCoffeeStore]=useState<CoffeeStoreDashboard|null>(null);
+    const { handleTrackLocation, locationErrorMsg, isFindingLocation } =useTrackLocation();
+    //const [coffeeStores,setCoffeeStore]=useState<CoffeeStoreDashboard|null>(null);
     const [coffeeStoresError, setCoffeeStoresError] = useState<string>("");
-
+    // @ts-ignore
+    const { dispatch ,state } = useContext(StoreContext);
+    const { coffeeStores, latLong } = state;
     useEffect(()=>{
         async function setCoffeeStoresByLocationAsync(){
             if(latLong) {
                 try {
                     const fetchedCoffeeStores = await fecthCoffeeStores(latLong);
-                    setCoffeeStore(fetchedCoffeeStores);
+                    //setCoffeeStore(fetchedCoffeeStores);
+                    dispatch({
+                        type: ACTION_TYPES.SET_COFFEE_STORES,
+                        payload: {
+                            fetchedCoffeeStores,
+                        },
+                    });
                     setCoffeeStoresError("");
                    // console.log('fetchedCoffeeStores',fetchedCoffeeStores);
                 }

@@ -1,25 +1,32 @@
 import {TrackLocationModel} from "../models/track-location";
-import {useState} from "react";
+import {useContext, useState} from "react";
+import {StoreContext} from "../store";
+import {ACTION_TYPES} from "../store/store-context";
 
 
-export const useTrackLocation=()=>{
-     const [locationErrorMsg, setLocationErrorMsg] = useState("");
-     const [isFindingLocation, setIsFindingLocation] = useState(false);
-    const [latLong, setLatLong] = useState("");
-
-    const success=(position:GeolocationPosition)=>{
+export const useTrackLocation=()=> {
+    const [locationErrorMsg, setLocationErrorMsg] = useState("");
+    const [isFindingLocation, setIsFindingLocation] = useState(false);
+   // const [latLong, setLatLong] = useState("");
+    // @ts-ignore
+    const { dispatch } = useContext(StoreContext);
+    const success = (position: GeolocationPosition) => {
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
 
-        setLatLong(`${latitude},${longitude}`);
+        dispatch({
+            type: ACTION_TYPES.SET_LAT_LONG,
+            payload: { latLong: `${latitude},${longitude}` },
+        });
+       // setLatLong(`${latitude},${longitude}`);
         setLocationErrorMsg("");
         setIsFindingLocation(false);
     };
-    const error=()=>{
+    const error = () => {
         setIsFindingLocation(false);
-       setLocationErrorMsg( "Unable to retrieve your location");
+        setLocationErrorMsg("Unable to retrieve your location");
     };
-    const handleTrackLocation=()=>{
+    const handleTrackLocation = () => {
         setIsFindingLocation(true);
         if (!navigator.geolocation) {
             setLocationErrorMsg("Geolocation is not supported by your browser");
@@ -31,7 +38,7 @@ export const useTrackLocation=()=>{
     };
     return {
         handleTrackLocation,
-        latLong,
+       // latLong,
         locationErrorMsg,
         isFindingLocation
 
