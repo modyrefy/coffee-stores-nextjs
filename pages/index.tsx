@@ -15,7 +15,10 @@ import {ACTION_TYPES} from "../store/store-context";
 //https://nextjs.org/docs/basic-features/typescript
 
 export  const getStaticProps:GetStaticProps  = async(context)=> {
-const data:CoffeeStoreDashboard=await fecthCoffeeStores();
+    const data:CoffeeStoreDashboard=await fecthCoffeeStores();
+    //const response=await fetch('/api/getCoffeeStoreByLocation');
+    //const data:CoffeeStoreDashboard=await  response.json();
+    //console.log('data',data)
     return {
         props: {
             coffeeStoresObj: data,
@@ -26,6 +29,7 @@ const Home: NextPage = (props   ) => {
 //const Home: NextPage<{CoffeeStoresObj:any,message:string}> = ({CoffeeStoresObj,message}   ) => {
   //console.log('props',props);
     //let locationModel:TrackLocationModel={latitude: 0, longitude: 0 ,errorMessage:null};
+
     const { handleTrackLocation, locationErrorMsg, isFindingLocation } =useTrackLocation();
     //const [coffeeStores,setCoffeeStore]=useState<CoffeeStoreDashboard|null>(null);
     const [coffeeStoresError, setCoffeeStoresError] = useState<string>("");
@@ -33,10 +37,15 @@ const Home: NextPage = (props   ) => {
     const { dispatch ,state } = useContext(StoreContext);
     const { coffeeStores, latLong } = state;
     useEffect(()=>{
+
         async function setCoffeeStoresByLocationAsync(){
             if(latLong) {
                 try {
-                    const fetchedCoffeeStores = await fecthCoffeeStores(latLong);
+                    console.log('setCoffeeStoresByLocationAsync',`/api/getCoffeeStoreByLocation?latLong=${latLong}`);
+                    //const fetchedCoffeeStores = await fecthCoffeeStores(latLong);
+                    const response=await fetch(`/api/getCoffeeStoreByLocation?latLong=${latLong}`);
+                    const fetchedCoffeeStores:CoffeeStoreDashboard=await  response.json();
+                    console.log('fetchedCoffeeStores',fetchedCoffeeStores);
                     //setCoffeeStore(fetchedCoffeeStores);
                     dispatch({
                         type: ACTION_TYPES.SET_COFFEE_STORES,
@@ -56,10 +65,10 @@ const Home: NextPage = (props   ) => {
         }
         setCoffeeStoresByLocationAsync()
     },[latLong])
-    console.log('latLong ',latLong);
-    console.log('locationErrorMsg ',locationErrorMsg);
+    // console.log('latLong ',latLong);
+    // console.log('locationErrorMsg ',locationErrorMsg);
     const handleOnBannerBtnClick=()=> {
-        console.log('hi banner button');
+        //console.log('hi banner button');
         handleTrackLocation();
         //  locationModel=useTrackLocation();
         // console.log('locationModel',locationModel);

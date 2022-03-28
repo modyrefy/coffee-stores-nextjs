@@ -22,10 +22,11 @@ export  const fecthCoffeeStores=async (latLong:string="43.65267326999575,-79.395
     //const latLong: string = ;
     const limit: number = 10;
     const query: string = "coffee stores";
+    const fourSquareApiKey:string=process.env.NEXT_PUBLIC_FOURSQUARE_API_KEY!=null &&process.env.NEXT_PUBLIC_FOURSQUARE_API_KEY!=undefined  ?process.env.NEXT_PUBLIC_FOURSQUARE_API_KEY:"";
     // @ts-ignore
     const response = await fetch(`https://api.foursquare.com/v3/places/nearby?ll=${latLong}&query=${query}&limit=${limit}`, {
         headers: {
-            Authorization: process.env.NEXT_PUBLIC_FOURSQUARE_API_KEY,
+            Authorization: fourSquareApiKey,
         },
     });
     const data: CoffeeStoreDashboard = await response.json();

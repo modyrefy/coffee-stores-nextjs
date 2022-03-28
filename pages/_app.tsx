@@ -7,7 +7,7 @@ import StoreProvider from "../store/store-context";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return(
-      <StoreProvider>.
+      <StoreProvider>
           <>
           <Component {...pageProps} />
           <footer>
